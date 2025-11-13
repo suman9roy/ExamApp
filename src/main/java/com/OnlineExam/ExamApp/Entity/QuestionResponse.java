@@ -16,6 +16,8 @@ public class QuestionResponse {
     @ManyToOne
     @JoinColumn(name = "users_id",nullable = false)
     private Users users;
-    private long questionId;
+    @ManyToOne
+    @JoinColumn(name = "question_id")
+    private Question question;
     private String selectedAnswer;
 }
