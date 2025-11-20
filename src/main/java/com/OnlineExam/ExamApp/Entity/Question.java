@@ -3,6 +3,8 @@ package com.OnlineExam.ExamApp.Entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
+
 @Entity
 @Data
 @NoArgsConstructor
@@ -20,5 +22,7 @@ public class Question {
     private String optionC;
     private String optionD;
     private String correctOption;
+    @OneToMany(mappedBy = "question",orphanRemoval = true)
+    private List<QuestionResponse> questionResponseList;
 
 }
