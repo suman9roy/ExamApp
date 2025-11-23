@@ -1,5 +1,6 @@
 package com.OnlineExam.ExamApp.Entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -11,9 +12,9 @@ import java.util.List;
 @AllArgsConstructor
 @Getter
 @Setter
+@ToString
 public class Question {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "question_id")
     private Long id;
     private String questionName;
@@ -23,6 +24,7 @@ public class Question {
     private String optionD;
     private String correctOption;
     @OneToMany(mappedBy = "question",orphanRemoval = true)
+    @JsonIgnore
     private List<QuestionResponse> questionResponseList;
 
 }
