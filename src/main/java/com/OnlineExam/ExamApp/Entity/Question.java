@@ -11,9 +11,9 @@ import java.util.List;
 @AllArgsConstructor
 @Getter
 @Setter
+@ToString
 public class Question {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "question_id")
     private Long id;
     private String questionName;

@@ -9,6 +9,7 @@ import lombok.*;
 @Data
 @Getter
 @Setter
+@ToString
 public class QuestionResponse {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -20,4 +21,5 @@ public class QuestionResponse {
     @JoinColumn(name = "question_id")
     private Question question;
     private String selectedAnswer;
+    private boolean isCorrect;
 }

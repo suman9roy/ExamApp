@@ -10,12 +10,14 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Setter
+@ToString
 @Entity
 public class Users {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "users_id")
     private Long id;
+
     private String name;
     private String password;
     private  String contact;
