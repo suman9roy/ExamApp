@@ -1,5 +1,7 @@
 package com.OnlineExam.ExamApp.Entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -16,9 +18,11 @@ public class QuestionResponse {
     private Long id;
     @ManyToOne
     @JoinColumn(name = "users_id",nullable = false)
+    @JsonBackReference
     private Users users;
     @ManyToOne
     @JoinColumn(name = "question_id")
+    @JsonIgnore
     private Question question;
     private String selectedAnswer;
     private boolean isCorrect;

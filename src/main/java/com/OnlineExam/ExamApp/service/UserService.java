@@ -1,12 +1,12 @@
 package com.OnlineExam.ExamApp.service;
 
-import com.OnlineExam.ExamApp.Dto.UserGetDto;
-import com.OnlineExam.ExamApp.Dto.UserLoginDto;
+import com.OnlineExam.ExamApp.Dto.*;
 
 
-import com.OnlineExam.ExamApp.Dto.UserRegistrationDto;
+import com.OnlineExam.ExamApp.Entity.QuestionResponse;
 import com.OnlineExam.ExamApp.Entity.Roles;
 import com.OnlineExam.ExamApp.Entity.Users;
+import com.OnlineExam.ExamApp.Repo.QuestionRepo;
 import com.OnlineExam.ExamApp.Repo.UsersRepo;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,15 +15,18 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+
 
 @Service
 public class UserService {
     private final UsersRepo usersRepo;
-
-    public UserService(UsersRepo usersRepo) {
+    private final QuestionRepo questionRepo;
+    public UserService(UsersRepo usersRepo, QuestionRepo questionRepo) {
         this.usersRepo = usersRepo;
+        this.questionRepo = questionRepo;
     }
 
     public ResponseEntity<?> login(UserLoginDto userLoginDto) {
@@ -48,6 +51,7 @@ null,
                 bcryptPasswordEncoder().encode(userRegistrationDto.getPassword()),
                 userRegistrationDto.getContact(),
                 Roles.USER,
+                false,0,
                 null
 
         );
@@ -114,5 +118,38 @@ null,
             usersRepo.deleteById(id);
             return  new ResponseEntity<>("User deleted successfully",HttpStatus.OK);
         }
+    }
+
+    public ResponseEntity<?> getScore(long id) {
+        int totalMarks=questionRepo.findAll().size();
+        List<QuestionResponse> questionResponseList=usersRepo.findById(id).orElseThrow(()->new RuntimeException("user id does not exist")).getQuestionResponseId();
+        int countOfCorrectAnswer= (int) questionResponseList.stream()
+                .filter(QuestionResponse::isCorrect).count();
+        int countOfWrongAnswer=(int) questionResponseList.stream().filter(x->!x.isCorrect()).count();
+        int unattemptedQuestion=totalMarks-(countOfCorrectAnswer+countOfWrongAnswer);
+        double percentage=(countOfCorrectAnswer-0.25*countOfWrongAnswer)*100/totalMarks;
+        String status=percentage>40?"pass":"fail";
+        ScoreDto scoreDto=new ScoreDto(
+               totalMarks,
+               countOfCorrectAnswer,
+                countOfWrongAnswer,
+                unattemptedQuestion,
+                percentage,
+                status
+
+
+        );
+        return new ResponseEntity<>(scoreDto,HttpStatus.OK);
+    }
+
+    public ResponseEntity<?> getLeaderBoard() {
+        List<LeaderBoardDto> leaderboard = usersRepo.findAll()
+                .stream()
+                .filter(Users::isAttempted)
+                .sorted(Comparator.comparing(Users::getScore).reversed())
+                .map(u -> new LeaderBoardDto(u.getId(), u.getName(), u.getScore()))
+                .toList();
+
+        return ResponseEntity.ok(leaderboard);
     }
 }

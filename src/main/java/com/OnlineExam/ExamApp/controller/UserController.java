@@ -30,5 +30,13 @@ public class UserController {
     public ResponseEntity<?> deleteUserById(@PathVariable long id){
         return userService.deleteUserById(id);
     }
+    @GetMapping("/user/score")
+    public ResponseEntity<?> getScore(@RequestParam long id){
+        return userService.getScore(id);
+    }
+    @GetMapping("/leader-board")
+    public ResponseEntity<?> getLeaderBoard(){
+       return userService.getLeaderBoard();
+    }
 
 }

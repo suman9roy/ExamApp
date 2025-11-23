@@ -29,17 +29,31 @@ public class QuestionResponseService {
     public ResponseEntity<?> submitAllQuestion(BulkSubmitRequest bulkSubmitRequest) {
 
         List<QuestionResponse> savedResponses = new ArrayList<>();
-        Users users=usersRepo.findById(bulkSubmitRequest.userId()).orElseThrow(()-> new RuntimeException("User does not exist"));
-    for(AnswerDto answerDto: bulkSubmitRequest.answers()){
-        QuestionResponse questionResponse=new QuestionResponse();
-        Question question= questionRepo.findById(answerDto.questionId()).orElseThrow(()->new RuntimeException("Question is not exist"));
-       questionResponse.setUsers(users);
-        questionResponse.setQuestion(question);
-        boolean isCorrect=answerDto.selectedAnswer().equalsIgnoreCase(question.getCorrectOption());
-        questionResponse.setSelectedAnswer(answerDto.selectedAnswer());
-        questionResponse.setCorrect(isCorrect);
-       savedResponses.add(questionResponseRepo.save(questionResponse));
-    }
-    return new ResponseEntity<>(savedResponses, HttpStatus.OK);
+        Users users = usersRepo.findById(bulkSubmitRequest.userId()).orElseThrow(() -> new RuntimeException("User does not exist"));
+        if (users.isAttempted()) {
+            return new ResponseEntity<>("user already submitted the answer", HttpStatus.OK);
+        } else {
+            users.setAttempted(true);
+            int countOfCorrectAnswer=0;
+            int countOfWrongAnswer=0;
+            for (AnswerDto answerDto : bulkSubmitRequest.answers()) {
+                QuestionResponse questionResponse = new QuestionResponse();
+                Question question = questionRepo.findById(answerDto.questionId()).orElseThrow(() -> new RuntimeException("Question is not exist"));
+                questionResponse.setUsers(users);
+                questionResponse.setQuestion(question);
+                boolean isCorrect = answerDto.selectedAnswer().equalsIgnoreCase(question.getCorrectOption());
+                if (isCorrect) {
+                    countOfCorrectAnswer++;
+                } else {
+                    countOfWrongAnswer++;
+                }
+                questionResponse.setSelectedAnswer(answerDto.selectedAnswer());
+                questionResponse.setCorrect(isCorrect);
+                savedResponses.add(questionResponseRepo.save(questionResponse));
+            }
+            users.setScore(countOfCorrectAnswer-0.25*countOfWrongAnswer);
+            usersRepo.save(users);
+            return new ResponseEntity<>(savedResponses, HttpStatus.OK);
+        }
     }
 }
